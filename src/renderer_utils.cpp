@@ -1,6 +1,7 @@
 #include "renderer_utils.hpp"
 #include "constants.hpp"
 #include <cstdint>
+#include <cstring>
 #include <string>
 
 namespace {
@@ -73,6 +74,17 @@ constexpr Symbol SYMBOLS[] = {
 
 } // namespace
 
+void clearScreen(SDL_Renderer* r)
+{
+    SDL_SetRenderDrawColor(r, 20, 20, 28, 255);
+    SDL_RenderClear(r);
+}
+
+float textWidth(const char* text, float scale)
+{
+    return static_cast<float>(std::strlen(text)) * 4.0f * scale;
+}
+
 void drawText(SDL_Renderer* r, const char* text, float x, float y, float scale)
 {
     for (const char* p = text; *p; ++p) {
@@ -121,6 +133,17 @@ void drawHUD(SDL_Renderer* r, int score, int lives, int maxLives, int level)
         SDL_FRect pip{40.0f + static_cast<float>(i) * (PIP + GAP), 20.0f, PIP, PIP};
         SDL_RenderFillRect(r, &pip);
     }
+}
+
+void drawGameOverOverlay(SDL_Renderer* r)
+{
+    constexpr float sc1 = 7.0f, sc2 = 5.0f;
+    const char* line1 = "GAME OVER";
+    const char* line2 = "SPACE RETRY  ESC MENU";
+    const float w1 = textWidth(line1, sc1);
+    const float w2 = textWidth(line2, sc2);
+    drawText(r, line1, WINDOW_W / 2.0f - w1 / 2.0f, WINDOW_H / 2.0f - 30.0f, sc1);
+    drawText(r, line2, WINDOW_W / 2.0f - w2 / 2.0f, WINDOW_H / 2.0f + 50.0f, sc2);
 }
 
 void drawCenterLine(SDL_Renderer* r)

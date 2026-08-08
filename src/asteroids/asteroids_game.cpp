@@ -2,9 +2,8 @@
 #include "renderer_utils.hpp"
 #include <algorithm>
 #include <cmath>
-#include <cstdlib>
-#include <cstring>
 #include <numbers>
+#include "rng.hpp"
 
 namespace {
 
@@ -34,8 +33,8 @@ void generateVerts(float vx[], float vy[], float radius)
 {
     for (int i = 0; i < AST_VERTS; ++i) {
         const float base  = static_cast<float>(i) * (2.0f * std::numbers::pi_v<float> / AST_VERTS);
-        const float jit   = static_cast<float>(std::rand() % 31 - 15) * (std::numbers::pi_v<float> / 180.0f);
-        const float scale = 0.70f + static_cast<float>(std::rand() % 31) / 100.0f;
+        const float jit   = static_cast<float>(randInt(-15, 15)) * (std::numbers::pi_v<float> / 180.0f);
+        const float scale = 0.70f + static_cast<float>(randInt(0, 30)) / 100.0f;
         vx[i] = std::cos(base + jit) * radius * scale;
         vy[i] = std::sin(base + jit) * radius * scale;
     }
@@ -129,14 +128,14 @@ void AsteroidsGame::spawnInitialAsteroids()
     for (int i = 0; i < count; ++i) {
         Vec2 pos{};
         for (int attempt = 0; attempt < 20; ++attempt) {
-            pos = {static_cast<float>(std::rand() % WINDOW_W),
-                   static_cast<float>(std::rand() % WINDOW_H)};
+            pos = {static_cast<float>(randInt(0, WINDOW_W - 1)),
+                   static_cast<float>(randInt(0, WINDOW_H - 1))};
             const float dx = pos.x - WINDOW_W / 2.0f;
             const float dy = pos.y - WINDOW_H / 2.0f;
             if (dx*dx + dy*dy >= AST_SPAWN_SAFE_DIST * AST_SPAWN_SAFE_DIST)
                 break;
         }
-        const float angle = static_cast<float>(std::rand() % 1000) * (2.0f * std::numbers::pi_v<float> / 1000.0f);
+        const float angle = static_cast<float>(randInt(0, 999)) * (2.0f * std::numbers::pi_v<float> / 1000.0f);
         const float speed = asteroidSpeed(2, level_);
         spawnAsteroid(pos, {std::cos(angle) * speed, std::sin(angle) * speed}, 2);
     }
@@ -364,16 +363,10 @@ void AsteroidsGame::draw() const
     if (state_ == AsteroidState::Waiting) {
         constexpr float sc = 6.0f;
         const char* msg = "SPACE TO START";
-        const float w = static_cast<float>(std::strlen(msg)) * 4.0f * sc;
+        const float w = textWidth(msg, sc);
         drawText(renderer_, msg, WINDOW_W / 2.0f - w / 2.0f, WINDOW_H * 0.72f, sc);
     } else if (state_ == AsteroidState::Lost) {
-        constexpr float sc1 = 7.0f, sc2 = 5.0f;
-        const char* line1 = "GAME OVER";
-        const char* line2 = "SPACE RETRY  ESC MENU";
-        const float w1 = static_cast<float>(std::strlen(line1)) * 4.0f * sc1;
-        const float w2 = static_cast<float>(std::strlen(line2)) * 4.0f * sc2;
-        drawText(renderer_, line1, WINDOW_W / 2.0f - w1 / 2.0f, WINDOW_H / 2.0f - 30.0f, sc1);
-        drawText(renderer_, line2, WINDOW_W / 2.0f - w2 / 2.0f, WINDOW_H / 2.0f + 50.0f, sc2);
+        drawGameOverOverlay(renderer_);
     }
 
     SDL_RenderPresent(renderer_);

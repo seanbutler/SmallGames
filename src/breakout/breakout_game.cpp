@@ -3,8 +3,8 @@
 #include "renderer_utils.hpp"
 #include <algorithm>
 #include <cmath>
-#include <cstring>
 #include <numbers>
+#include "rng.hpp"
 
 namespace {
 
@@ -19,17 +19,13 @@ constexpr float BSPEED_MAX      = 900.0f;
 constexpr float BSPEED_INC      = 10.0f;   // per brick hit
 constexpr float LEVEL_SPEED_INC = 40.0f;   // added to base speed each level
 
-constexpr int   ROWS = 6;
-constexpr int   COLS = 10;
-
 constexpr float BRICK_GAP    = 6.0f;
 constexpr float BRICK_H      = 24.0f;
 constexpr float BRICK_TOP    = 80.0f;
 constexpr float BRICK_MARGIN = 60.0f;
-constexpr float BRICK_W = (WINDOW_W - 2.0f * BRICK_MARGIN - (COLS - 1) * BRICK_GAP) / COLS;
+constexpr float BRICK_W = (WINDOW_W - 2.0f * BRICK_MARGIN - (BREAKOUT_COLS - 1) * BRICK_GAP) / BREAKOUT_COLS;
 
-struct Color { Uint8 r, g, b; };
-constexpr Color ROW_COLORS[ROWS] = {
+constexpr Color ROW_COLORS[BREAKOUT_ROWS] = {
     {220,  60,  60},   // red
     {220, 140,  60},   // orange
     {220, 210,  60},   // yellow
@@ -39,7 +35,7 @@ constexpr Color ROW_COLORS[ROWS] = {
 };
 
 // Points per brick, top row worth most
-constexpr int ROW_POINTS[ROWS] = {7, 5, 4, 3, 2, 1};
+constexpr int ROW_POINTS[BREAKOUT_ROWS] = {7, 5, 4, 3, 2, 1};
 
 SDL_FRect brickRect(int row, int col)
 {
@@ -61,10 +57,10 @@ BreakoutGame::BreakoutGame(SDL_Renderer* renderer)
 
 void BreakoutGame::reset()
 {
-    for (int r = 0; r < ROWS; ++r)
-        for (int c = 0; c < COLS; ++c)
+    for (int r = 0; r < BREAKOUT_ROWS; ++r)
+        for (int c = 0; c < BREAKOUT_COLS; ++c)
             bricks_[r][c] = true;
-    bricksLeft_ = ROWS * COLS;
+    bricksLeft_ = BREAKOUT_ROWS * BREAKOUT_COLS;
     score_  = 0;
     lives_  = BREAKOUT_LIVES;
     level_  = 1;
@@ -79,7 +75,7 @@ void BreakoutGame::handleEvent(const SDL_Event& event)
     switch (event.key.key) {
         case SDLK_SPACE:
             if (state_ == BreakoutState::Waiting) {
-                const float angle = static_cast<float>(std::rand() % 60 - 30)
+                const float angle = static_cast<float>(randInt(-30, 29))
                                     * std::numbers::pi_v<float> / 180.0f;
                 vel_   = {std::sinf(angle), -std::cosf(angle)};
                 speed_ = std::min(BSPEED + static_cast<float>(level_ - 1) * LEVEL_SPEED_INC,
@@ -156,8 +152,8 @@ void BreakoutGame::checkBricks()
 {
     bool reflected = false;
 
-    for (int r = 0; r < ROWS; ++r) {
-        for (int c = 0; c < COLS; ++c) {
+    for (int r = 0; r < BREAKOUT_ROWS; ++r) {
+        for (int c = 0; c < BREAKOUT_COLS; ++c) {
             if (!bricks_[r][c]) continue;
 
             const SDL_FRect br = brickRect(r, c);
@@ -194,10 +190,10 @@ void BreakoutGame::checkBricks()
 void BreakoutGame::nextLevel()
 {
     ++level_;
-    for (int r = 0; r < ROWS; ++r)
-        for (int c = 0; c < COLS; ++c)
+    for (int r = 0; r < BREAKOUT_ROWS; ++r)
+        for (int c = 0; c < BREAKOUT_COLS; ++c)
             bricks_[r][c] = true;
-    bricksLeft_ = ROWS * COLS;
+    bricksLeft_ = BREAKOUT_ROWS * BREAKOUT_COLS;
     state_ = BreakoutState::Waiting;
 }
 
@@ -206,10 +202,10 @@ void BreakoutGame::draw() const
     clearScreen();
 
     // Bricks
-    for (int r = 0; r < ROWS; ++r) {
+    for (int r = 0; r < BREAKOUT_ROWS; ++r) {
         const Color& col = ROW_COLORS[r];
         SDL_SetRenderDrawColor(renderer_, col.r, col.g, col.b, 255);
-        for (int c = 0; c < COLS; ++c) {
+        for (int c = 0; c < BREAKOUT_COLS; ++c) {
             if (!bricks_[r][c]) continue;
             SDL_FRect rect = brickRect(r, c);
             SDL_RenderFillRect(renderer_, &rect);
@@ -232,24 +228,18 @@ void BreakoutGame::draw() const
     if (state_ == BreakoutState::Waiting) {
         constexpr float sc = 6.0f;
         const char* msg = "SPACE TO LAUNCH";
-        const float w = static_cast<float>(std::strlen(msg)) * 4.0f * sc;
+        const float w = textWidth(msg, sc);
         drawText(renderer_, msg, WINDOW_W / 2.0f - w / 2.0f, PAD_Y - 80.0f, sc);
 
     } else if (state_ == BreakoutState::Lost) {
-        constexpr float sc1 = 7.0f, sc2 = 5.0f;
-        const char* line1 = "GAME OVER";
-        const char* line2 = "SPACE RETRY  ESC MENU";
-        const float w1 = static_cast<float>(std::strlen(line1)) * 4.0f * sc1;
-        const float w2 = static_cast<float>(std::strlen(line2)) * 4.0f * sc2;
-        drawText(renderer_, line1, WINDOW_W / 2.0f - w1 / 2.0f, WINDOW_H / 2.0f + 60.0f, sc1);
-        drawText(renderer_, line2, WINDOW_W / 2.0f - w2 / 2.0f, WINDOW_H / 2.0f + 120.0f, sc2);
+        drawGameOverOverlay(renderer_);
 
     } else if (state_ == BreakoutState::Won) {
         constexpr float sc1 = 7.0f, sc2 = 5.0f;
         const char* line1 = "YOU WIN";
         const char* line2 = "SPACE PLAY AGAIN  ESC MENU";
-        const float w1 = static_cast<float>(std::strlen(line1)) * 4.0f * sc1;
-        const float w2 = static_cast<float>(std::strlen(line2)) * 4.0f * sc2;
+        const float w1 = textWidth(line1, sc1);
+        const float w2 = textWidth(line2, sc2);
         drawText(renderer_, line1, WINDOW_W / 2.0f - w1 / 2.0f, WINDOW_H / 2.0f + 60.0f, sc1);
         drawText(renderer_, line2, WINDOW_W / 2.0f - w2 / 2.0f, WINDOW_H / 2.0f + 120.0f, sc2);
     }

@@ -2,12 +2,9 @@
 #include "renderer_utils.hpp"
 #include <algorithm>
 #include <cmath>
-#include <cstdlib>
-#include <cstring>
+#include "rng.hpp"
 
 namespace {
-
-struct Color { Uint8 r, g, b; };
 
 constexpr Color ROW_COLORS[SI_ROWS] = {
     {  0, 220, 220},   // row 0: cyan   (30 pts)
@@ -228,7 +225,7 @@ void SpaceInvadersGame::spawnEnemyBullet()
     }
     if (count == 0) return;
 
-    const int pick = std::rand() % count;
+    const int pick = randInt(0, count - 1);
     const int c    = validCols[pick];
     const int r    = bottomRow[pick];
 
@@ -373,16 +370,10 @@ void SpaceInvadersGame::draw() const
     if (state_ == SIState::Waiting) {
         constexpr float sc = 6.0f;
         const char* msg = "SPACE TO START";
-        const float w = static_cast<float>(std::strlen(msg)) * 4.0f * sc;
+        const float w = textWidth(msg, sc);
         drawText(renderer_, msg, WINDOW_W / 2.0f - w / 2.0f, SI_PLAYER_Y - 120.0f, sc);
     } else if (state_ == SIState::Lost) {
-        constexpr float sc1 = 7.0f, sc2 = 5.0f;
-        const char* line1 = "GAME OVER";
-        const char* line2 = "SPACE RETRY  ESC MENU";
-        const float w1 = static_cast<float>(std::strlen(line1)) * 4.0f * sc1;
-        const float w2 = static_cast<float>(std::strlen(line2)) * 4.0f * sc2;
-        drawText(renderer_, line1, WINDOW_W / 2.0f - w1 / 2.0f, WINDOW_H / 2.0f - 30.0f, sc1);
-        drawText(renderer_, line2, WINDOW_W / 2.0f - w2 / 2.0f, WINDOW_H / 2.0f + 50.0f, sc2);
+        drawGameOverOverlay(renderer_);
     }
 
     SDL_RenderPresent(renderer_);

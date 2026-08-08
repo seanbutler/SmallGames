@@ -1,6 +1,7 @@
 #pragma once
 #include "game.hpp"
 #include "math.hpp"
+#include "breakout_constants.hpp"
 
 enum class BreakoutState { Waiting, Playing, Won, Lost };
 
@@ -23,9 +24,7 @@ private:
     Vec2  vel_{};
     float speed_{};
 
-    static constexpr int ROWS = 6;
-    static constexpr int COLS = 10;
-    bool bricks_[ROWS][COLS]{};
+    bool bricks_[BREAKOUT_ROWS][BREAKOUT_COLS]{};
     int  bricksLeft_{};
     int  score_{};
     int  lives_{};

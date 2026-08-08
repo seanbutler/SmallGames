@@ -2,7 +2,6 @@
 #include "constants.hpp"
 #include "renderer_utils.hpp"
 #include <algorithm>
-#include <cstring>
 
 namespace {
 
@@ -52,13 +51,12 @@ void MenuScreen::update(float /*dt*/) {}
 
 void MenuScreen::draw() const
 {
-    SDL_SetRenderDrawColor(renderer_, 20, 20, 28, 255);
-    SDL_RenderClear(renderer_);
+    clearScreen(renderer_);
     SDL_SetRenderDrawColor(renderer_, 255, 255, 255, 255);
 
     constexpr float titleScale = 12.0f;
     const char* title = "SMALL GAMES";
-    const float tw = static_cast<float>(std::strlen(title)) * 4.0f * titleScale;
+    const float tw = textWidth(title, titleScale);
     drawText(renderer_, title, WINDOW_W / 2.0f - tw / 2.0f, 140.0f, titleScale);
 
     constexpr float itemScale   = 8.0f;
@@ -68,12 +66,12 @@ void MenuScreen::draw() const
     // Fixed cursor column: left of the widest label so it never jumps between items
     float maxLabelW = 0.0f;
     for (int i = 0; i < ITEM_COUNT; ++i)
-        maxLabelW = std::max(maxLabelW, static_cast<float>(std::strlen(ITEMS[i].label)) * 4.0f * itemScale);
+        maxLabelW = std::max(maxLabelW, textWidth(ITEMS[i].label, itemScale));
     const float cursorX = WINDOW_W / 2.0f - maxLabelW / 2.0f - 5.0f * itemScale;
 
     for (int i = 0; i < ITEM_COUNT; ++i) {
         const char* label = ITEMS[i].label;
-        const float lw = static_cast<float>(std::strlen(label)) * 4.0f * itemScale;
+        const float lw = textWidth(label, itemScale);
         const float y  = listTop + static_cast<float>(i) * itemSpacing;
 
         if (i == selected_)
@@ -84,7 +82,7 @@ void MenuScreen::draw() const
 
     constexpr float footerScale = 5.0f;
     const char* footer = "ENTER TO SELECT  ESC TO QUIT";
-    const float fw = static_cast<float>(std::strlen(footer)) * 4.0f * footerScale;
+    const float fw = textWidth(footer, footerScale);
     drawText(renderer_, footer, WINDOW_W / 2.0f - fw / 2.0f, WINDOW_H - 80.0f, footerScale);
 
     SDL_RenderPresent(renderer_);

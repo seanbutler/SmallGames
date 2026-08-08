@@ -6,19 +6,19 @@
 
 2. **[DONE]** ~~**PI redefined in four anonymous namespaces**~~ — All occurrences replaced with `std::numbers::pi_v<float>` from `<numbers>` (C++20). Local `PI` constant in `asteroids_game.cpp` removed.
 
-3. **Text width formula copied everywhere** — `static_cast<float>(std::strlen(msg)) * 4.0f * scale` appears in every `draw()` across all files. Should be a `textWidth(const char*, float)` free function in `renderer_utils`.
+3. **[DONE]** ~~**Text width formula copied everywhere**~~ — Extracted into `textWidth(text, scale)` in `renderer_utils`. All 14 call sites replaced; stale `<cstring>` includes removed from 6 files.
 
 4. **[DONE]** ~~**HUD layout repeated across three games**~~ — Extracted into `drawHUD(renderer, score, lives, maxLives, level)` in `renderer_utils`. Each game now has a single call.
 
-5. **Game-over overlay repeated** — the "GAME OVER" / "SPACE RETRY ESC MENU" two-line centred overlay is copy-pasted verbatim into Breakout, Space Invaders, and Asteroids.
+5. **[DONE]** ~~**Game-over overlay repeated**~~ — Extracted into `drawGameOverOverlay(renderer)` in `renderer_utils`. Y-positions standardised across all three games.
 
-6. **`Color` struct defined twice** — identical `struct Color { Uint8 r, g, b; }` in `breakout_game.cpp` and `spaceinvaders_game.cpp` anonymous namespaces.
+6. **[DONE]** ~~**`Color` struct defined twice**~~ — Moved to `renderer_utils.hpp`; local definitions removed from both anonymous namespaces.
 
-7. **`std::rand()` scattered in four places** — `ball.cpp`, `breakout_game.cpp`, `spaceinvaders_game.cpp`, `asteroids_game.cpp` all call `std::rand()` with no seed, so every run produces identical random patterns. Should be a single seeded `std::mt19937` in a shared utility.
+7. **[DONE]** ~~**`std::rand()` scattered in four places**~~ — Replaced with `randInt(lo, hi)` in `rng.hpp`, backed by a function-local `std::mt19937` seeded from `std::random_device`. All 8 call sites updated; `<cstdlib>` removed from all game files.
 
-8. **Background clear repeated in non-game screens** — `SDL_SetRenderDrawColor(renderer_, 20, 20, 28, 255)` + `SDL_RenderClear` appear in `SplashScreen::draw()` and `MenuScreen::draw()`. `Game::clearScreen()` already centralises this but `IScreen` has no equivalent.
+8. **[DONE]** ~~**Background clear repeated in non-game screens**~~ — Extracted into `clearScreen(SDL_Renderer*)` in `renderer_utils`. `Game::clearScreen()` delegates to it; `SplashScreen` and `MenuScreen` call it directly.
 
-9. **`ROWS`/`COLS` defined twice in Breakout** — once as `static constexpr int` members of `BreakoutGame`, and again in the `breakout_game.cpp` anonymous namespace. In sync by coincidence.
+9. **[DONE]** ~~**`ROWS`/`COLS` defined twice in Breakout**~~ — Moved to `breakout_constants.hpp` as `BREAKOUT_ROWS`/`BREAKOUT_COLS`. Class member definitions and anonymous namespace definitions both removed.
 
 ---
 

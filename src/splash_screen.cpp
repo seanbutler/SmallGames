@@ -1,7 +1,6 @@
 #include "splash_screen.hpp"
 #include "constants.hpp"
 #include "renderer_utils.hpp"
-#include <cstring>
 
 SplashScreen::SplashScreen(SDL_Renderer* renderer)
     : renderer_(renderer)
@@ -21,13 +20,12 @@ void SplashScreen::update(float dt)
 
 void SplashScreen::draw() const
 {
-    SDL_SetRenderDrawColor(renderer_, 20, 20, 28, 255);
-    SDL_RenderClear(renderer_);
+    clearScreen(renderer_);
     SDL_SetRenderDrawColor(renderer_, 255, 255, 255, 255);
 
     constexpr float titleScale = 14.0f;
     const char* title = "SMALL GAMES";
-    const float tw = static_cast<float>(std::strlen(title)) * 4.0f * titleScale;
+    const float tw = textWidth(title, titleScale);
     drawText(renderer_, title,
              WINDOW_W / 2.0f - tw / 2.0f,
              WINDOW_H / 2.0f - 5.0f * titleScale,
@@ -35,7 +33,7 @@ void SplashScreen::draw() const
 
     constexpr float subScale = 6.0f;
     const char* sub = "PRESS ANY KEY";
-    const float sw = static_cast<float>(std::strlen(sub)) * 4.0f * subScale;
+    const float sw = textWidth(sub, subScale);
     drawText(renderer_, sub,
              WINDOW_W / 2.0f - sw / 2.0f,
              WINDOW_H / 2.0f + 60.0f,

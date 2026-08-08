@@ -3,7 +3,6 @@
 #include "renderer_utils.hpp"
 #include <algorithm>
 #include <cmath>
-#include <cstring>
 #include <numbers>
 
 PongGame::PongGame(SDL_Renderer* renderer)
@@ -84,14 +83,14 @@ void PongGame::draw() const
     if (state_ == PongState::GameOver) {
         const char* winner = (scoreLeft_ >= WIN_SCORE) ? "PLAYER ONE WINS" : "PLAYER TWO WINS";
         const char* opts   = "SPACE REPLAY  ESC MENU";
-        const float w1 = static_cast<float>(std::strlen(winner)) * 4.0f * 7.0f;
-        const float w2 = static_cast<float>(std::strlen(opts))   * 4.0f * 5.0f;
+        const float w1 = textWidth(winner, 7.0f);
+        const float w2 = textWidth(opts,   5.0f);
         drawText(renderer_, winner, WINDOW_W / 2.0f - w1 / 2.0f, WINDOW_H / 2.0f + 60.0f, 7.0f);
         drawText(renderer_, opts,   WINDOW_W / 2.0f - w2 / 2.0f, WINDOW_H / 2.0f + 120.0f, 5.0f);
     } else if (state_ != PongState::Playing) {
         const char* msg = (state_ == PongState::Paused) ? "PAUSED  PRESS P"
                                                         : "PRESS SPACE TO SERVE";
-        const float msgW = static_cast<float>(std::strlen(msg)) * 4.0f * 7.0f;
+        const float msgW = textWidth(msg, 7.0f);
         drawText(renderer_, msg, WINDOW_W / 2.0f - msgW / 2.0f, WINDOW_H / 2.0f + 90.0f, 7.0f);
     }
 

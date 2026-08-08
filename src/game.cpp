@@ -1,4 +1,5 @@
 #include "game.hpp"
+#include "renderer_utils.hpp"
 
 Game::Game(SDL_Renderer* renderer)
     : renderer_(renderer)
@@ -7,6 +8,5 @@ Game::Game(SDL_Renderer* renderer)
 
 void Game::clearScreen() const
 {
-    SDL_SetRenderDrawColor(renderer_, 20, 20, 28, 255);
-    SDL_RenderClear(renderer_);
+    ::clearScreen(renderer_);
 }

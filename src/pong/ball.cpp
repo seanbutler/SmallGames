@@ -2,8 +2,8 @@
 #include "pong_constants.hpp"
 #include <algorithm>
 #include <cmath>
-#include <cstdlib>
 #include <numbers>
+#include "rng.hpp"
 #include <SDL3/SDL.h>
 
 Ball::Ball(MessageBus& bus)
@@ -35,7 +35,7 @@ void Ball::serve(bool moveRight)
     pos   = {WINDOW_W / 2.0f, WINDOW_H / 2.0f};
     speed = BALL_SPEED_BASE;
 
-    const float angle = static_cast<float>(std::rand() % 46 - 22) * std::numbers::pi_v<float> / 180.0f;
+    const float angle = static_cast<float>(randInt(-22, 23)) * std::numbers::pi_v<float> / 180.0f;
     const float dir   = moveRight ? 1.0f : -1.0f;
     vel = {std::cosf(angle) * dir, std::sinf(angle)};
 }
