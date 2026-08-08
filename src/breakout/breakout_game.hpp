@@ -3,7 +3,7 @@
 #include "math.hpp"
 #include "breakout_constants.hpp"
 
-enum class BreakoutState { Waiting, Playing, Won, Lost };
+enum class BreakoutState { Waiting, Playing, Lost };
 
 class BreakoutGame : public Game {
 public:

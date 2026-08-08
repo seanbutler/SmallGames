@@ -24,9 +24,9 @@
 
 ## Dead Code
 
-1. **`BreakoutState::Won` is unreachable** — `nextLevel()` is called directly when all bricks are cleared, so `state_` is never set to `Won`. The `draw()` branch for `Won` renders text that can never appear.
+1. **[DONE]** ~~**`BreakoutState::Won` is unreachable**~~ — `Won` removed from the enum. Dead `draw()` branch and dead `handleEvent` guard both deleted.
 
-2. **`PongGame::running_`** — Escape is intercepted by `PongScreen` before reaching `PongGame`, so `running_` is only ever set false by `SDL_EVENT_QUIT`, which `App::handleEvent` already handles independently. The member and its `running()` accessor serve no live purpose.
+2. **[DONE]** ~~**`PongGame::running_`**~~ — Member, accessor, and both setter sites removed. Dead `SDL_EVENT_QUIT` and `SDLK_ESCAPE` handlers in `PongGame::handleEvent` removed; `GameScreen` already handles Escape and `App` already handles quit.
 
 ---
 
@@ -53,8 +53,11 @@
 ## Naming / Clarity
 
 1. State enum naming is inconsistent — `PongState`, `BreakoutState`, `SIState`, `AsteroidState`: three different conventions; `SIState` uses an abbreviation while the others use full names.
+
 2. Bullet struct naming is inconsistent — `SIBullet` vs `AstBullet`, different prefix styles for the same concept.
+
 3. `PAD_` vs `PADDLE_` prefix inconsistency between Breakout and Pong constants.
+
 4. Serve angle range is unnamed — Pong uses ±22° (`ball.cpp`), Breakout uses ±30° (`breakout_game.cpp`), paddle reflection uses 65° (`breakout_game.cpp`). None are named constants.
 
 ---

@@ -12,7 +12,6 @@ public:
     void handleEvent(const SDL_Event& event) override;
     void update(float dt) override;
     void draw() const override;
-    bool running() const { return running_; }
 
 private:
     void checkCollisions();
@@ -24,5 +23,4 @@ private:
     int       scoreLeft_{};
     int       scoreRight_{};
     PongState state_{PongState::Waiting};
-    bool      running_{true};
 };

@@ -81,7 +81,7 @@ void BreakoutGame::handleEvent(const SDL_Event& event)
                 speed_ = std::min(BSPEED + static_cast<float>(level_ - 1) * LEVEL_SPEED_INC,
                                   BSPEED_MAX);
                 state_ = BreakoutState::Playing;
-            } else if (state_ == BreakoutState::Lost || state_ == BreakoutState::Won) {
+            } else if (state_ == BreakoutState::Lost) {
                 reset();
             }
             break;
@@ -92,7 +92,7 @@ void BreakoutGame::handleEvent(const SDL_Event& event)
 
 void BreakoutGame::update(float dt)
 {
-    // Paddle always moves (even in Waiting/Won/Lost so player can reposition)
+    // Paddle always moves (even in Waiting/Lost so player can reposition)
     const bool* keys = SDL_GetKeyboardState(nullptr);
     if (keys[SDL_SCANCODE_LEFT])  paddle_.x -= PAD_SPEED * dt;
     if (keys[SDL_SCANCODE_RIGHT]) paddle_.x += PAD_SPEED * dt;
@@ -234,14 +234,6 @@ void BreakoutGame::draw() const
     } else if (state_ == BreakoutState::Lost) {
         drawGameOverOverlay(renderer_);
 
-    } else if (state_ == BreakoutState::Won) {
-        constexpr float sc1 = 7.0f, sc2 = 5.0f;
-        const char* line1 = "YOU WIN";
-        const char* line2 = "SPACE PLAY AGAIN  ESC MENU";
-        const float w1 = textWidth(line1, sc1);
-        const float w2 = textWidth(line2, sc2);
-        drawText(renderer_, line1, WINDOW_W / 2.0f - w1 / 2.0f, WINDOW_H / 2.0f + 60.0f, sc1);
-        drawText(renderer_, line2, WINDOW_W / 2.0f - w2 / 2.0f, WINDOW_H / 2.0f + 120.0f, sc2);
     }
 
     SDL_RenderPresent(renderer_);

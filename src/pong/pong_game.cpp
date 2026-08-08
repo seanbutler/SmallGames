@@ -16,16 +16,9 @@ PongGame::PongGame(SDL_Renderer* renderer)
 
 void PongGame::handleEvent(const SDL_Event& event)
 {
-    if (event.type == SDL_EVENT_QUIT) {
-        running_ = false;
-        return;
-    }
     if (event.type != SDL_EVENT_KEY_DOWN) return;
 
     switch (event.key.key) {
-        case SDLK_ESCAPE:
-            running_ = false;
-            break;
         case SDLK_P:
             if (state_ == PongState::Playing)      state_ = PongState::Paused;
             else if (state_ == PongState::Paused)  state_ = PongState::Playing;
