@@ -4,10 +4,9 @@
 #include <cmath>
 #include <cstdlib>
 #include <cstring>
+#include <numbers>
 
 namespace {
-
-constexpr float PI = 3.14159265f;
 
 float asteroidRadius(int size)
 {
@@ -34,8 +33,8 @@ int scoreForSize(int size)
 void generateVerts(float vx[], float vy[], float radius)
 {
     for (int i = 0; i < AST_VERTS; ++i) {
-        const float base  = static_cast<float>(i) * (2.0f * PI / AST_VERTS);
-        const float jit   = static_cast<float>(std::rand() % 31 - 15) * (PI / 180.0f);
+        const float base  = static_cast<float>(i) * (2.0f * std::numbers::pi_v<float> / AST_VERTS);
+        const float jit   = static_cast<float>(std::rand() % 31 - 15) * (std::numbers::pi_v<float> / 180.0f);
         const float scale = 0.70f + static_cast<float>(std::rand() % 31) / 100.0f;
         vx[i] = std::cos(base + jit) * radius * scale;
         vy[i] = std::sin(base + jit) * radius * scale;
@@ -58,7 +57,7 @@ void splitAsteroid(std::vector<Asteroid>& out, const Asteroid& src, int level)
     const float base     = std::atan2(src.vel.y, src.vel.x);
 
     for (int i = -1; i <= 1; i += 2) {
-        const float a = base + static_cast<float>(i) * (PI / 5.0f);
+        const float a = base + static_cast<float>(i) * (std::numbers::pi_v<float> / 5.0f);
         Asteroid child{};
         child.pos    = src.pos;
         child.vel    = {std::cos(a) * newSpeed, std::sin(a) * newSpeed};
@@ -93,7 +92,7 @@ void AsteroidsGame::reset()
 {
     shipPos_    = {WINDOW_W / 2.0f, WINDOW_H / 2.0f};
     shipVel_    = {};
-    shipAngle_  = -PI / 2.0f;   // pointing up
+    shipAngle_  = -std::numbers::pi_v<float> / 2.0f;   // pointing up
     invincible_ = AST_INVINCIBLE_TIME;
     thrusting_  = false;
 
@@ -113,7 +112,7 @@ void AsteroidsGame::nextLevel()
     ++level_;
     shipPos_    = {WINDOW_W / 2.0f, WINDOW_H / 2.0f};
     shipVel_    = {};
-    shipAngle_  = -PI / 2.0f;
+    shipAngle_  = -std::numbers::pi_v<float> / 2.0f;
     invincible_ = AST_INVINCIBLE_TIME;
     thrusting_  = false;
 
@@ -137,7 +136,7 @@ void AsteroidsGame::spawnInitialAsteroids()
             if (dx*dx + dy*dy >= AST_SPAWN_SAFE_DIST * AST_SPAWN_SAFE_DIST)
                 break;
         }
-        const float angle = static_cast<float>(std::rand() % 1000) * (2.0f * PI / 1000.0f);
+        const float angle = static_cast<float>(std::rand() % 1000) * (2.0f * std::numbers::pi_v<float> / 1000.0f);
         const float speed = asteroidSpeed(2, level_);
         spawnAsteroid(pos, {std::cos(angle) * speed, std::sin(angle) * speed}, 2);
     }
@@ -159,7 +158,7 @@ void AsteroidsGame::respawnShip()
 {
     shipPos_    = {WINDOW_W / 2.0f, WINDOW_H / 2.0f};
     shipVel_    = {};
-    shipAngle_  = -PI / 2.0f;
+    shipAngle_  = -std::numbers::pi_v<float> / 2.0f;
     invincible_ = AST_INVINCIBLE_TIME;
     thrusting_  = false;
     for (auto& b : bullets_) b.active = false;
@@ -356,8 +355,8 @@ void AsteroidsGame::draw() const
             const float bly = shipPos_.y + std::sin(shipAngle_ + 2.4f) * R * 0.5f;
             const float brx = shipPos_.x + std::cos(shipAngle_ - 2.4f) * R * 0.5f;
             const float bry = shipPos_.y + std::sin(shipAngle_ - 2.4f) * R * 0.5f;
-            const float ftx = shipPos_.x + std::cos(shipAngle_ + PI) * R * 1.4f;
-            const float fty = shipPos_.y + std::sin(shipAngle_ + PI) * R * 1.4f;
+            const float ftx = shipPos_.x + std::cos(shipAngle_ + std::numbers::pi_v<float>) * R * 1.4f;
+            const float fty = shipPos_.y + std::sin(shipAngle_ + std::numbers::pi_v<float>) * R * 1.4f;
             SDL_SetRenderDrawColor(renderer_, 220, 120, 40, 255);
             SDL_RenderLine(renderer_, blx, bly, ftx, fty);
             SDL_RenderLine(renderer_, brx, bry, ftx, fty);

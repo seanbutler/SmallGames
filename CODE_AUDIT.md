@@ -2,70 +2,74 @@
 
 ## Duplication / DRY
 
-**PI repeated everywhere** — `3.14159265f` appears in `game.cpp`, `ball.cpp`, `audio.cpp`, `breakout_game.cpp`. Should be one named constant.
+1. **[DONE]** ~~**All four `XxxScreen` classes are identical boilerplate**~~ — Common logic extracted into `GameScreen` base class (`game_screen.hpp/.cpp`). Each derived screen is now ~5 lines: a constructor passing `game_` to the base. Further reduction to a class template is possible but deferred.
 
-**`PongScreen` and `BreakoutScreen` are near-identical** — both intercept Escape, delegate `update`/`draw` to a game object, manage a `signal_` member. A template or base class `GameScreen<T>` would eliminate ~40 lines of copy-paste.
+2. **[DONE]** ~~**PI redefined in four anonymous namespaces**~~ — All occurrences replaced with `std::numbers::pi_v<float>` from `<numbers>` (C++20). Local `PI` constant in `asteroids_game.cpp` removed.
 
-**Text width formula copied everywhere** — `std::strlen(msg) * 4.0f * scale` appears in `game.cpp`, `splash_screen.cpp`, `menu_screen.cpp`, `breakout_game.cpp`. Should be a `textWidth(const char*, float)` utility in `renderer_utils`.
+3. **Text width formula copied everywhere** — `static_cast<float>(std::strlen(msg)) * 4.0f * scale` appears in every `draw()` across all files. Should be a `textWidth(const char*, float)` free function in `renderer_utils`.
 
-**Circle-vs-rect collision implemented twice** — once in `game.cpp::circleHitsRect()` and again inline in `breakout_game.cpp::checkBricks()`.
+4. **HUD layout repeated across three games** — score top-right, lives pips top-left, LVL top-centre with identical magic numbers in Breakout, Space Invaders, and Asteroids. A `drawHUD(renderer, score, lives, maxLives, level)` helper would unify them.
 
-**Background/foreground colour setup repeated** — the same two `SDL_SetRenderDrawColor` calls appear in every `draw()` across all four screen types.
+5. **Game-over overlay repeated** — the "GAME OVER" / "SPACE RETRY ESC MENU" two-line centred overlay is copy-pasted verbatim into Breakout, Space Invaders, and Asteroids.
 
----
+6. **`Color` struct defined twice** — identical `struct Color { Uint8 r, g, b; }` in `breakout_game.cpp` and `spaceinvaders_game.cpp` anonymous namespaces.
 
-## Scattered / Missing Constants
+7. **`std::rand()` scattered in four places** — `ball.cpp`, `breakout_game.cpp`, `spaceinvaders_game.cpp`, `asteroids_game.cpp` all call `std::rand()` with no seed, so every run produces identical random patterns. Should be a single seeded `std::mt19937` in a shared utility.
 
-**Breakout physics constants are local to the `.cpp` anonymous namespace** — `PAD_W`, `BSPEED`, `BRICK_GAP`, etc. are inaccessible from tests or tooling and inconsistent with Pong constants living in `constants.hpp`.
+8. **Background clear repeated in non-game screens** — `SDL_SetRenderDrawColor(renderer_, 20, 20, 28, 255)` + `SDL_RenderClear` appear in `SplashScreen::draw()` and `MenuScreen::draw()`. `Game::clearScreen()` already centralises this but `IScreen` has no equivalent.
 
-**Ball serve angle range differs between games** — Pong uses ±22° (`ball.cpp:37`), Breakout uses ±30° (`breakout_game.cpp:82`), paddle reflection uses 65° (`breakout_game.cpp:149`). None are named.
-
-**`std::rand()` used in two places** — `ball.cpp:37`, `breakout_game.cpp:82`. Should use `<random>` with a seeded `std::mt19937`.
+9. **`ROWS`/`COLS` defined twice in Breakout** — once as `static constexpr int` members of `BreakoutGame`, and again in the `breakout_game.cpp` anonymous namespace. In sync by coincidence.
 
 ---
 
-## State Machine Design
+## Dead Code
 
-**Transitions are scattered** — in `Game`, state changes happen in both `handleEvent()` and `update()` with no central transition table. Adding a state means touching multiple methods.
+1. **`BreakoutState::Won` is unreachable** — `nextLevel()` is called directly when all bricks are cleared, so `state_` is never set to `Won`. The `draw()` branch for `Won` renders text that can never appear.
 
-**`ScreenSignal` is never reset to `None`** — once a screen sets its signal, `App::update()` will call `transition()` on the very next frame. Works today, but if `transition()` ever fails silently the stale signal persists forever.
+2. **`PongGame::running_`** — Escape is intercepted by `PongScreen` before reaching `PongGame`, so `running_` is only ever set false by `SDL_EVENT_QUIT`, which `App::handleEvent` already handles independently. The member and its `running()` accessor serve no live purpose.
 
-**`BreakoutState::Won` exists in the enum but is now unreachable** — `nextLevel()` was wired in and the `Won` branch in `draw()` is dead code.
+---
+
+## Logic Bugs
+
+1. **Asteroids: level advances on death** — in `AsteroidsGame::update()`, `if (asteroids_.empty()) nextLevel()` fires unconditionally after `checkShipVsAsteroids()`. If the player dies on the same frame the last asteroid is destroyed, `nextLevel()` is called even though `state_` is now `Lost`. The guard should be `if (state_ == AsteroidState::Playing && asteroids_.empty())`.
+
+2. **`ScreenSignal` is never reset to `None`** — once a screen sets its signal, `App::update()` will call `transition()` on the very next frame. Works today, but if `transition()` ever fails silently the stale signal persists forever.
 
 ---
 
 ## Abstraction Leaks / Coupling
 
-**`Entity::pos` is a public member** — `Ball`, `Paddle`, and `BreakoutGame` all mutate it directly. Encapsulating it behind accessors would let `Entity` enforce bounds or add observers later.
+1. **`MessageBus::publish()` is marked `const` but invokes mutable handlers** — misleading const-qualifier; the handlers modify game state (audio output, score).
 
-**`Ball::vel` and `Ball::speed` are public** — `Game` reaches into `Ball` to set velocity directly after collisions (`game.cpp:110–113`). The physics response belongs on `Ball`, not in `Game`.
+2. **No unsubscribe on `MessageBus`** — `AudioManager` registers lambdas capturing `this`. The bus outlives `audio_` in `Game`'s destruction order (`audio_` dies first, then `bus_`). Safe today by construction order coincidence; if anything publishes to `bus_` after `audio_` is destroyed the lambda dereferences a dead object.
 
-**`MessageBus::publish()` is marked `const` but invokes mutable handlers** — misleading const-qualifier.
+3. **`Entity::pos` is a public member** — `Ball` and `Paddle` mutate it directly. Encapsulating behind accessors would let `Entity` enforce bounds or add observers later.
 
-**No unsubscribe on `MessageBus`** — `AudioManager` registers lambdas that capture `this`. If `AudioManager` is destroyed and the bus outlives it the handlers dangle. Currently safe by construction order, but fragile.
+4. **`Ball::vel` and `Ball::speed` are public** — `PongGame` reaches into `Ball` to set velocity directly after collisions. The physics response belongs on `Ball`, not on the game.
 
 ---
 
 ## Naming / Clarity
 
-- `game.cpp` / `game.hpp` should be `pong_game.cpp` / `pong_game.hpp` — named generically because Pong was the first game, before the multi-game architecture existed. Breakout follows the explicit `breakout_game.*` pattern; Pong should match.
-- `rel` in `game.cpp:108` — means "relative hit position", not obvious.
-- `col` in `breakout_game.cpp:211` — ambiguous between "colour" and "column".
-- `PAD_` vs `PADDLE_` prefix inconsistency across the two games.
-- `GameState` vs `BreakoutState` vs `ScreenSignal` — three different naming conventions for the same concept.
+1. State enum naming is inconsistent — `PongState`, `BreakoutState`, `SIState`, `AsteroidState`: three different conventions; `SIState` uses an abbreviation while the others use full names.
+2. Bullet struct naming is inconsistent — `SIBullet` vs `AstBullet`, different prefix styles for the same concept.
+3. `PAD_` vs `PADDLE_` prefix inconsistency between Breakout and Pong constants.
+4. Serve angle range is unnamed — Pong uses ±22° (`ball.cpp`), Breakout uses ±30° (`breakout_game.cpp`), paddle reflection uses 65° (`breakout_game.cpp`). None are named constants.
 
 ---
 
 ## Resource Management
 
-**`std::vector<float>` allocated per audio tone** — `audio.cpp:33` allocates a fresh buffer on every brick hit, wall bounce, etc. A small pre-allocated scratch buffer would remove the per-event heap allocation.
+1. **`std::vector<float>` allocated per audio tone** — `audio.cpp` allocates a fresh buffer on every brick hit, wall bounce, invader kill, etc. Asteroids can fire six events in one frame (large → 2 medium → 4 small). This per-event heap churn is the most likely source of the intermittent heap corruption crash. A pre-allocated scratch buffer on `AudioManager` would fix it.
 
-**Raw `SDL_Renderer*` passed through the whole call chain** — `main` → `App` → `Screen` → `Game` with no ownership semantics. Works fine today but a thin RAII wrapper or `shared_ptr` would make the lifetime contract explicit.
+2. **Raw `SDL_Renderer*` passed through the whole call chain** — `main` → `App` → `Screen` → `Game` with no ownership semantics. Works fine today but a thin RAII wrapper would make the lifetime contract explicit.
 
 ---
 
 ## Minor / Low Priority
 
-- `drawNumber()` in `renderer_utils.cpp:103` indexes `DIGITS[c - '0']` with no bounds check; `drawText()` is safe but `drawNumber()` is not.
-- `MenuItem` array in `menu_screen.cpp` uses `sizeof(ITEMS)/sizeof(ITEMS[0])` instead of `std::size()` or `std::array`.
-- `SDL_GetKeyboardState()` return value not null-checked (SDL guarantees non-null, but it's undocumented at the call site).
+- `drawNumber()` in `renderer_utils.cpp` indexes `DIGITS[c - '0']` with no bounds check; safe in practice since callers pass `std::to_string()` output, but fragile.
+- `MenuItem` array in `menu_screen.cpp` uses `sizeof(ITEMS)/sizeof(ITEMS[0])` instead of `std::size()`.
+- `SDL_GetKeyboardState()` return value not null-checked (SDL guarantees non-null, but undocumented at the call site).
+- Ball serve angle and Asteroids spawn angle use `std::rand() % N` which has modulo bias; negligible for a game but worth noting.

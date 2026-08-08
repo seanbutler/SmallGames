@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <numbers>
 
 PongGame::PongGame(SDL_Renderer* renderer)
     : Game(renderer)
@@ -103,7 +104,7 @@ void PongGame::checkCollisions()
 
     if (ball_.vel.x < 0.0f && circleHitsRect(left_.rect(), &hitY)) {
         const float rel   = std::clamp(hitY, -1.0f, 1.0f);
-        const float angle = rel * 60.0f * 3.14159265f / 180.0f;
+        const float angle = rel * 60.0f * std::numbers::pi_v<float> / 180.0f;
         ball_.vel   = {std::cosf(angle), std::sinf(angle)};
         ball_.speed = std::min(ball_.speed + BALL_SPEED_STEP, BALL_SPEED_MAX);
         ball_.pos.x = PADDLE_INSET + PADDLE_W + BALL_R;
@@ -111,7 +112,7 @@ void PongGame::checkCollisions()
         bus_.publish(Event::PaddleHit);
     } else if (ball_.vel.x > 0.0f && circleHitsRect(right_.rect(), &hitY)) {
         const float rel   = std::clamp(hitY, -1.0f, 1.0f);
-        const float angle = rel * 60.0f * 3.14159265f / 180.0f;
+        const float angle = rel * 60.0f * std::numbers::pi_v<float> / 180.0f;
         ball_.vel   = {-std::cosf(angle), std::sinf(angle)};
         ball_.speed = std::min(ball_.speed + BALL_SPEED_STEP, BALL_SPEED_MAX);
         ball_.pos.x = WINDOW_W - PADDLE_INSET - PADDLE_W - BALL_R;

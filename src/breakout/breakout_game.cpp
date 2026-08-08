@@ -4,6 +4,7 @@
 #include <algorithm>
 #include <cmath>
 #include <cstring>
+#include <numbers>
 
 namespace {
 
@@ -79,7 +80,7 @@ void BreakoutGame::handleEvent(const SDL_Event& event)
         case SDLK_SPACE:
             if (state_ == BreakoutState::Waiting) {
                 const float angle = static_cast<float>(std::rand() % 60 - 30)
-                                    * 3.14159265f / 180.0f;
+                                    * std::numbers::pi_v<float> / 180.0f;
                 vel_   = {std::sinf(angle), -std::cosf(angle)};
                 speed_ = std::min(BSPEED + static_cast<float>(level_ - 1) * LEVEL_SPEED_INC,
                                   BSPEED_MAX);
@@ -145,7 +146,7 @@ void BreakoutGame::checkPaddle()
 
     // Reflect with angle based on hit position (-1..1 from center)
     const float hitT  = std::clamp((ball_.x - paddle_.x) / (PAD_W / 2.0f), -1.0f, 1.0f);
-    const float angle = hitT * (65.0f * 3.14159265f / 180.0f);
+    const float angle = hitT * (65.0f * std::numbers::pi_v<float> / 180.0f);
     vel_   = {std::sinf(angle), -std::cosf(angle)};
     ball_.y = py - BR;   // push ball above paddle to prevent re-collision
     bus_.publish(Event::PaddleHit);

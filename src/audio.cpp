@@ -1,5 +1,6 @@
 #include "audio.hpp"
 #include <cmath>
+#include <numbers>
 #include <vector>
 
 AudioManager::AudioManager(MessageBus& bus)
@@ -36,7 +37,7 @@ void AudioManager::playTone(float freq, float duration, float volume)
         const float t   = static_cast<float>(i) / static_cast<float>(sr);
         const float env = 1.0f - t / duration;
         samples[static_cast<std::size_t>(i)] =
-            std::sinf(2.0f * 3.14159265f * freq * t) * env * volume;
+            std::sinf(2.0f * std::numbers::pi_v<float> * freq * t) * env * volume;
     }
 
     SDL_PutAudioStreamData(stream_, samples.data(),

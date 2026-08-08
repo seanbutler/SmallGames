@@ -14,6 +14,7 @@ add_executable(${PROJECT_NAME}
     src/menu_screen.cpp
     src/audio.cpp
     src/game.cpp
+    src/game_screen.cpp
     src/renderer_utils.cpp
     src/pong/pong_game.cpp
     src/pong/pong_screen.cpp
