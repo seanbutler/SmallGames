@@ -105,6 +105,24 @@ void drawNumber(SDL_Renderer* r, int number, float x, float y, float scale)
     }
 }
 
+void drawHUD(SDL_Renderer* r, int score, int lives, int maxLives, int level)
+{
+    // Score (top-right)
+    drawNumber(r, score, WINDOW_W - 160.0f, 20.0f, 8.0f);
+
+    // Level (top-centre)
+    drawText(r, "LVL", WINDOW_W / 2.0f - 64.0f, 20.0f, 8.0f);
+    drawNumber(r, level, WINDOW_W / 2.0f + 64.0f, 20.0f, 8.0f);
+
+    // Lives pips (top-left)
+    constexpr float PIP = 14.0f, GAP = 8.0f;
+    for (int i = 0; i < maxLives; ++i) {
+        if (i >= lives) continue;
+        SDL_FRect pip{40.0f + static_cast<float>(i) * (PIP + GAP), 20.0f, PIP, PIP};
+        SDL_RenderFillRect(r, &pip);
+    }
+}
+
 void drawCenterLine(SDL_Renderer* r)
 {
     constexpr float dashH = 18.0f;

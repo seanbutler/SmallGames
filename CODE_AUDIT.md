@@ -8,7 +8,7 @@
 
 3. **Text width formula copied everywhere** — `static_cast<float>(std::strlen(msg)) * 4.0f * scale` appears in every `draw()` across all files. Should be a `textWidth(const char*, float)` free function in `renderer_utils`.
 
-4. **HUD layout repeated across three games** — score top-right, lives pips top-left, LVL top-centre with identical magic numbers in Breakout, Space Invaders, and Asteroids. A `drawHUD(renderer, score, lives, maxLives, level)` helper would unify them.
+4. **[DONE]** ~~**HUD layout repeated across three games**~~ — Extracted into `drawHUD(renderer, score, lives, maxLives, level)` in `renderer_utils`. Each game now has a single call.
 
 5. **Game-over overlay repeated** — the "GAME OVER" / "SPACE RETRY ESC MENU" two-line centred overlay is copy-pasted verbatim into Breakout, Space Invaders, and Asteroids.
 

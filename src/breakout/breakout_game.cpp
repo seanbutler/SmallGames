@@ -218,21 +218,7 @@ void BreakoutGame::draw() const
 
     SDL_SetRenderDrawColor(renderer_, 255, 255, 255, 255);
 
-    // Score (top-right)
-    drawNumber(renderer_, score_, WINDOW_W - 160.0f, 20.0f, 8.0f);
-
-    // Level (top-centre): "LVL " prefix = 4 chars × 32 px = 128 px wide
-    drawText(renderer_, "LVL", WINDOW_W / 2.0f - 64.0f, 20.0f, 8.0f);
-    drawNumber(renderer_, level_, WINDOW_W / 2.0f + 64.0f, 20.0f, 8.0f);
-
-    // Lives pips (top-left)
-    constexpr float PIP = 14.0f;
-    constexpr float GAP =  8.0f;
-    for (int i = 0; i < BREAKOUT_LIVES; ++i) {
-        if (i >= lives_) continue;
-        SDL_FRect pip{40.0f + static_cast<float>(i) * (PIP + GAP), 20.0f, PIP, PIP};
-        SDL_RenderFillRect(renderer_, &pip);
-    }
+    drawHUD(renderer_, score_, lives_, BREAKOUT_LIVES, level_);
 
     // Paddle
     SDL_FRect padRect{paddle_.x - PAD_W / 2.0f, PAD_Y - PAD_H / 2.0f, PAD_W, PAD_H};

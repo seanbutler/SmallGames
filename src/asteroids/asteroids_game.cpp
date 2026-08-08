@@ -314,20 +314,7 @@ void AsteroidsGame::draw() const
 
     SDL_SetRenderDrawColor(renderer_, 255, 255, 255, 255);
 
-    // Score (top-right)
-    drawNumber(renderer_, score_, WINDOW_W - 160.0f, 20.0f, 8.0f);
-
-    // Level (top-centre)
-    drawText(renderer_, "LVL", WINDOW_W / 2.0f - 64.0f, 20.0f, 8.0f);
-    drawNumber(renderer_, level_, WINDOW_W / 2.0f + 64.0f, 20.0f, 8.0f);
-
-    // Lives pips (top-left)
-    constexpr float PIP = 14.0f, GAP = 8.0f;
-    for (int i = 0; i < AST_LIVES; ++i) {
-        if (i >= lives_) continue;
-        SDL_FRect pip{40.0f + static_cast<float>(i) * (PIP + GAP), 20.0f, PIP, PIP};
-        SDL_RenderFillRect(renderer_, &pip);
-    }
+    drawHUD(renderer_, score_, lives_, AST_LIVES, level_);
 
     // Asteroids
     for (const auto& ast : asteroids_)
