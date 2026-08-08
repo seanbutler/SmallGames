@@ -205,7 +205,7 @@ void AsteroidsGame::update(float dt)
         checkBulletVsAsteroids();
         if (invincible_ <= 0.0f)
             checkShipVsAsteroids();
-        if (asteroids_.empty())
+        if (state_ == AsteroidState::Playing && asteroids_.empty())
             nextLevel();
     }
 }

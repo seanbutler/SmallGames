@@ -32,7 +32,7 @@
 
 ## Logic Bugs
 
-1. **Asteroids: level advances on death** — in `AsteroidsGame::update()`, `if (asteroids_.empty()) nextLevel()` fires unconditionally after `checkShipVsAsteroids()`. If the player dies on the same frame the last asteroid is destroyed, `nextLevel()` is called even though `state_` is now `Lost`. The guard should be `if (state_ == AsteroidState::Playing && asteroids_.empty())`.
+1. **[DONE]** ~~**Asteroids: level advances on death**~~ — Guard added: `if (state_ == AsteroidState::Playing && asteroids_.empty()) nextLevel()`. Simultaneous last-asteroid-kill and ship-death no longer triggers a level advance.
 
 2. **`ScreenSignal` is never reset to `None`** — once a screen sets its signal, `App::update()` will call `transition()` on the very next frame. Works today, but if `transition()` ever fails silently the stale signal persists forever.
 
