@@ -47,11 +47,16 @@ void MenuScreen::handleEvent(const SDL_Event& event)
     }
 }
 
-void MenuScreen::update(float /*dt*/) {}
+void MenuScreen::update(float dt)
+{
+    elapsed_ += dt;
+    starfield_.update(dt);
+}
 
 void MenuScreen::draw() const
 {
     clearScreen(renderer_);
+    starfield_.draw(renderer_);
     SDL_SetRenderDrawColor(renderer_, 255, 255, 255, 255);
 
     constexpr float titleScale = 12.0f;
@@ -61,7 +66,7 @@ void MenuScreen::draw() const
 
     constexpr float itemScale   = 8.0f;
     constexpr float itemSpacing = 70.0f;
-    const float listTop = WINDOW_H / 2.0f - (static_cast<float>(ITEM_COUNT) * itemSpacing) / 2.0f;
+    const float listTop = WINDOW_H / 2.0f - (static_cast<float>(ITEM_COUNT) * itemSpacing) / 2.0f + 40.0f;
 
     // Fixed cursor column: left of the widest label so it never jumps between items
     float maxLabelW = 0.0f;

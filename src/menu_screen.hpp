@@ -1,5 +1,6 @@
 #pragma once
 #include "iscreen.hpp"
+#include "effects.hpp"
 
 class MenuScreen : public IScreen {
 public:
@@ -13,4 +14,6 @@ private:
     SDL_Renderer* renderer_;
     int          selected_{};
     ScreenSignal signal_{ScreenSignal::None};
+    StarField    starfield_{};
+    float        elapsed_{};
 };

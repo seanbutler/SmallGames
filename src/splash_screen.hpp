@@ -1,5 +1,6 @@
 #pragma once
 #include "iscreen.hpp"
+#include "effects.hpp"
 
 class SplashScreen : public IScreen {
 public:
@@ -11,6 +12,7 @@ public:
 
 private:
     SDL_Renderer* renderer_;
-    float elapsed_{};
-    bool  done_{};
+    float     elapsed_{};
+    bool      done_{};
+    StarField starfield_{};
 };

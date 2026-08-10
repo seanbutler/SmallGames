@@ -15,12 +15,14 @@ void SplashScreen::handleEvent(const SDL_Event& event)
 void SplashScreen::update(float dt)
 {
     elapsed_ += dt;
+    starfield_.update(dt);
     if (elapsed_ >= 2.0f) done_ = true;
 }
 
 void SplashScreen::draw() const
 {
     clearScreen(renderer_);
+    starfield_.draw(renderer_);
     SDL_SetRenderDrawColor(renderer_, 255, 255, 255, 255);
 
     constexpr float titleScale = 14.0f;
